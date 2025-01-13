@@ -5,6 +5,7 @@ dotenv.config()
 import cors from "cors"
 import UserRoute from "./routes/user.route.js"
 import ProductRoute from "./routes/product.route.js"
+import CartRoute from "./routes/cart.route.js"
 
 const app = express()
 
@@ -22,5 +23,6 @@ app.get("/", (req, res) => {
 })
 app.use("/users", UserRoute)
 app.use("/products",ProductRoute)
+app.use("/cart", CartRoute)
 
 export default app;
