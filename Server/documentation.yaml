@@ -1,0 +1,257 @@
+# User Routes
+/users/register:
+  post:
+    description: Register a new user
+    parameters:
+      - name: email
+        in: body
+        required: true
+        description: The user's email
+        schema:
+          type: string
+      - name: password
+        in: body
+        required: true
+        description: The user's password
+        schema:
+          type: string
+    responses:
+      201:
+        description: User created successfully
+      400:
+        description: Validation error
+      500:
+        description: Server error
+
+/users/login:
+  post:
+    description: Login a user
+    parameters:
+      - name: email
+        in: body
+        required: true
+        description: The user's email
+        schema:
+          type: string
+      - name: password
+        in: body
+        required: true
+        description: The user's password
+        schema:
+          type: string
+    responses:
+      200:
+        description: User logged in successfully
+      400:
+        description: Validation error
+      401:
+        description: Invalid email or password
+      500:
+        description: Server error
+
+/users/logout:
+  get:
+    description: Logout the current user
+    responses:
+      200:
+        description: User logged out successfully
+      401:
+        description: Unauthorized
+
+/users/all-users:
+  get:
+    description: Get all users
+    responses:
+      200:
+        description: List of users
+      500:
+        description: Server error
+
+# Product Routes
+/products:
+  # ... Add product routes documentation here ...
+
+/products/create-product:
+  post:
+    description: Add a new product
+    parameters:
+      - name: name
+        in: body
+        required: true
+        description: The product name
+        schema:
+          type: string
+      - name: wscode
+        in: body
+        required: true
+        description: The product WS code
+        schema:
+          type: string
+      - name: salesPrice
+        in: body
+        required: true
+        description: The product sales price
+        schema:
+          type: number
+      - name: mrp
+        in: body
+        required: true
+        description: The product MRP
+        schema:
+          type: number
+      - name: packageSize
+        in: body
+        required: true
+        description: The product package size
+        schema:
+          type: string
+      - name: imageUrls
+        in: body
+        required: false
+        description: The product image URLs
+        schema:
+          type: array
+          items:
+            type: string
+      - name: tags
+        in: body
+        required: false
+        description: The product tags
+        schema:
+          type: array
+          items:
+            type: string
+      - name: category
+        in: body
+        required: true
+        description: The product category
+        schema:
+          type: string
+      - name: userId
+        in: body
+        required: true
+        description: The ID of the user adding the product
+        schema:
+          type: string
+    responses:
+      201:
+        description: Product created successfully
+      400:
+        description: Validation error
+      500:
+        description: Server error
+
+/products/delete-product/{id}:
+  delete:
+    description: Delete a product by ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The product ID
+        schema:
+          type: string
+    responses:
+      200:
+        description: Product deleted successfully
+      404:
+        description: Product not found
+      500:
+        description: Server error
+
+/products/product/{id}:
+  get:
+    description: Get a product by ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The product ID
+        schema:
+          type: string
+    responses:
+      200:
+        description: Product details
+      404:
+        description: Product not found
+      500:
+        description: Server error
+
+/products/all-products:
+  get:
+    description: Get all products
+    responses:
+      200:
+        description: List of products
+      500:
+        description: Server error
+
+/products/update-product/{id}:
+  put:
+    description: Update a product by ID
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The product ID
+        schema:
+          type: string
+      - name: name
+        in: body
+        required: false
+        description: The product name
+        schema:
+          type: string
+      - name: wscode
+        in: body
+        required: false
+        description: The product WS code
+        schema:
+          type: string
+      - name: salesPrice
+        in: body
+        required: false
+        description: The product sales price
+        schema:
+          type: number
+      - name: mrp
+        in: body
+        required: false
+        description: The product MRP
+        schema:
+          type: number
+      - name: packageSize
+        in: body
+        required: false
+        description: The product package size
+        schema:
+          type: string
+      - name: imageUrls
+        in: body
+        required: false
+        description: The product image URLs
+        schema:
+          type: array
+          items:
+            type: string
+      - name: tags
+        in: body
+        required: false
+        description: The product tags
+        schema:
+          type: array
+          items:
+            type: string
+      - name: category
+        in: body
+        required: false
+        description: The product category
+        schema:
+          type: string
+    responses:
+      200:
+        description: Product updated successfully
+      404:
+        description: Product not found
+      500:
+        description: Server error
