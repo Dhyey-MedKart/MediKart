@@ -6,6 +6,7 @@ import cors from "cors"
 import UserRoute from "./routes/user.route.js"
 import ProductRoute from "./routes/product.route.js"
 import CartRoute from "./routes/cart.route.js"
+import OrderRoute from "./routes/order.route.js"
 
 const app = express()
 
@@ -24,5 +25,6 @@ app.get("/", (req, res) => {
 app.use("/users", UserRoute)
 app.use("/products",ProductRoute)
 app.use("/cart", CartRoute)
+app.use("/orders", OrderRoute)
 
 export default app;
