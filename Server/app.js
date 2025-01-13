@@ -15,13 +15,17 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(cors(
     {
-        origin:"http://localhost:3000"
+        origin:"http://localhost:3000",
+        credentials:true,
     }
 ))
 
 app.get("/", (req, res) => {
     res.send("Backend started working!!!")
 })
+
+
+
 app.use("/users", UserRoute)
 app.use("/products",ProductRoute)
 app.use("/cart", CartRoute)
