@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "../config/axios"; // Import the Axios instance
 import { useRouter } from "next/navigation";
+import Cookies from 'js-cookie';
 
 interface LoginFormInputs {
   email: string;
@@ -14,17 +15,18 @@ const LoginForm: React.FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-
   const onSubmit = async (data: LoginFormInputs) => {
     setError(null); // Reset error state
     try {
       const response = await axios.post("/users/login", data);
-      console.log("Login successful:", response.data);
-
+      alert(`Login successful: ${response.data.user.name}`);
+      Cookies.set('authToken', response.data.token, { expires: 7, secure: true })
+      Cookies.set('userEmail', response.data.user.name, { expires: 7, secure: true })
       // Navigate to the dashboard on success
       router.push("/dashboard");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
-      console.log(err);
+      alert(`Error`);
     }
   };
 
