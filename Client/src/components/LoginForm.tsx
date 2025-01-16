@@ -22,8 +22,13 @@ const LoginForm: React.FC = () => {
       alert(`Login successful: ${response.data.user.name}`);
       Cookies.set('authToken', response.data.token, { expires: 7, secure: true })
       Cookies.set('userEmail', response.data.user.name, { expires: 7, secure: true })
+      if((response.data.user.role) === 'ADMIN'){
+        router.push("/admin/dashboard");
+      }
+      else{
+        router.push("/dashboard");
+      }
       // Navigate to the dashboard on success
-      router.push("/dashboard");
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       alert(`Error`);

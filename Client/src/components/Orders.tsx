@@ -43,7 +43,7 @@ const Orders = () => {
         const formattedOrders = response.data.orders.map((order) => ({
           id: order.id,
           date: new Date(order.createdAt).toLocaleDateString(),
-          items: order.items.map((item) => ({
+          items: order.items.map((item: { productId: number; quantity: number }) => ({
             name: item.productId, // Replace with a product name lookup if available
             quantity: item.quantity,
           })),

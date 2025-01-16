@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-
+import uploadToCloudinary from "../services/auth";
 const AddProduct = () => {
   const [product, setProduct] = useState({
     name: "",
@@ -24,6 +24,8 @@ const AddProduct = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
+      const responce = uploadToCloudinary(files);
+      console.log(responce);
       const urls = files.map((file) => URL.createObjectURL(file));
       setProduct({ ...product, images: urls });
     }

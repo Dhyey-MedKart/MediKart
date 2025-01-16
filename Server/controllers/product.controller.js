@@ -1,5 +1,5 @@
 import * as ProductService from "../services/product.service.js";
-
+import prisma from "../db/db.js";
 // Controller to delete a product
 export const deleteProductController = async (req, res) => {
   const { id } = req.params;
@@ -61,9 +61,12 @@ export const updateProductController = async (req, res) => {
 
 // Controller to create a product
 export const createProductController = async (req, res) => {
-  const { name, wsCode, salesPrice, mrp, packageSize, images, tags, category} = req.body;
-  const userId = req.user?.id; // Assuming `req.user` contains the authenticated user data
-
+  const { name, wsCode, salesPrice, mrp, packageSize, images, tags, category} = req.body; // Assuming `req.user` contains the authenticated user data
+  let userId = req.user.email;
+  userId = await prisma.User.findFirst({
+    where: { email : userId},
+  });
+  userId = userId.id;
   try {
     if (!userId) {
       return res.status(400).json({ message: "User ID is required" });

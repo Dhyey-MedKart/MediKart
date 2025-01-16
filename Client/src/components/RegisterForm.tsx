@@ -42,7 +42,7 @@ const RegisterForm: React.FC = () => {
           type="email"
           id="email"
           {...register("email", { required: "Email is required" })}
-          className="w-full p-2 border border-gray-300 rounded mt-1"
+          className="w-full p-2 border border-gray-300 rounded mt-1" 
         />
         {errors.email && <span className="text-red-500">{errors.email.message}</span>}
       </div>

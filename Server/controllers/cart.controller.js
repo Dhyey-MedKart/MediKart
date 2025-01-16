@@ -1,10 +1,14 @@
 import * as CartService from "../services/cart.service.js";
+import prisma from "../db/db.js";
 
 // Controller to add an item to the cart
 export const addToCartController = async (req, res) => {
   const { productId, quantity } = req.body;
-  const userId = req.user.id;
-
+  let userId = req.user.email;
+  userId = await prisma.User.findFirst({
+    where: { email : userId},
+  });
+  userId = userId.id;
   try {
     const cartItem = await CartService.addToCart(userId, productId, quantity);
     res.status(200).json({ cartItem });
