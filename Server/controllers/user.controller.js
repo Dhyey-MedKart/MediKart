@@ -1,5 +1,6 @@
 import { validationResult } from "express-validator";
 import * as UserService from "../services/user.service.js";
+import prisma from "../db/db.js";
 
 export const createUserController = async (req, res) => {
     const errors = validationResult(req);
@@ -65,6 +66,27 @@ export const getUserProfileController = async (req, res) => {
     try {
         const userId = req.user.id; // Make sure the user is authenticated and this ID exists
         const user = await UserService.getUserProfile(userId); // Call the service function
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const { password, ...userWithoutPassword } = user; // Don't return the password
+        res.status(200).json(userWithoutPassword);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error fetching user profile" });
+    }
+};
+
+
+export const updateUserProfileController = async (req, res) => {
+    try {
+        const { id, role } = req.body;
+
+        
+        // Make sure the user is authenticated and this ID exists
+        const user = await UserService.putUserRole(id,role); // Call the service function
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });

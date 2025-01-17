@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import uploadToCloudinary from "../services/auth";
+import UploadMultiImage from "../services/auth";
 const AddProduct = () => {
   const [product, setProduct] = useState({
     name: "",
@@ -21,15 +21,26 @@ const AddProduct = () => {
     setProduct({ ...product, [e.target.name]: e.target.value });
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const files = Array.from(e.target.files);
-      const responce = uploadToCloudinary(files);
-      console.log(responce);
-      const urls = files.map((file) => URL.createObjectURL(file));
-      setProduct({ ...product, images: urls });
+        const files = Array.from(e.target.files);
+
+        // Upload the files and get the responses
+        const response = await UploadMultiImage(files);
+        console.log(response);
+        // Assuming `UploadMultiImage` returns an array of Cloudinary URLs
+        const uploadedUrls = response;
+
+        // Update the product state with the actual Cloudinary URLs
+        setProduct((prevProduct) => ({
+            ...prevProduct,
+            images: uploadedUrls,
+        }));
+
+        console.log("Uploaded URLs:", uploadedUrls);
     }
-  };
+};
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

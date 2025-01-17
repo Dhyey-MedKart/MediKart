@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import Cookies from "js-cookie";
+import UploadMultiImage from "../services/auth";
 
 const EditProductPage = () => {
   const id = useParams();
@@ -63,7 +64,25 @@ const EditProductPage = () => {
       images: prev.images.filter((_, i) => i !== index),
     }));
   };
+const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+        const files = Array.from(e.target.files);
 
+        // Upload the files and get the responses
+        const response = await UploadMultiImage(files);
+        console.log(response);
+        // Assuming `UploadMultiImage` returns an array of Cloudinary URLs
+        const uploadedUrls = response;
+
+        // Update the product state with the actual Cloudinary URLs
+        setProduct((prevProduct) => ({
+            ...prevProduct,
+            images: uploadedUrls,
+        }));
+
+        console.log("Uploaded URLs:", uploadedUrls);
+    }
+};
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setNewImages(Array.from(e.target.files));
@@ -170,9 +189,10 @@ const EditProductPage = () => {
         </div>
         <input
           type="file"
+          accept="image/*"
           multiple
-          onChange={handleFileChange}
-          className="w-full mb-4 p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={handleImageUpload}
+          className="w-full mb-4"
         />
         <button
           type="submit"

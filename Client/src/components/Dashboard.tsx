@@ -20,12 +20,14 @@ interface Product {
 const ITEMS_PER_PAGE = 12; // Number of products per page
 
 const Dashboard: React.FC = () => {
-  const userEmail = Cookies.get("userEmail");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1); // Pagination state
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Modal state
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Selected product for cart
+  const [quantity, setQuantity] = useState<number>(1); // Quantity state
   const router = useRouter();
 
   useEffect(() => {
@@ -54,7 +56,6 @@ const Dashboard: React.FC = () => {
     product.wsCode.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Calculate pagination details
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -64,6 +65,43 @@ const Dashboard: React.FC = () => {
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
+    }
+  };
+
+  const handleAddToCart = (product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true); // Open the modal to select quantity
+  };
+
+  const handleQuantityChange = (operation: "increase" | "decrease") => {
+    setQuantity((prevQuantity) =>
+      operation === "increase" ? prevQuantity + 1 : prevQuantity > 1 ? prevQuantity - 1 : 1
+    );
+  };
+
+  const handleConfirm = async () => {
+    if (selectedProduct) {
+      try {
+        const token = Cookies.get("authToken");
+        const response = await axios.post(
+          "http://localhost:8000/cart/add-to-cart",
+          {
+            productId: selectedProduct.id,
+            quantity,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log(response.data); // Handle success (e.g., show a success message)
+      } catch (error) {
+        console.error(error);
+        setError("Failed to add to cart. Please try again later.");
+      } finally {
+        setIsModalOpen(false); // Close the modal after confirming
+      }
     }
   };
 
@@ -79,7 +117,7 @@ const Dashboard: React.FC = () => {
             <li>
               <button
                 className="w-full text-left px-4 py-2 rounded-lg hover:bg-blue-700"
-                onClick={() => router.push("/admin/dashboard")}
+                onClick={() => router.push("/dashboard")}
               >
                 Dashboard
               </button>
@@ -152,12 +190,16 @@ const Dashboard: React.FC = () => {
                     <h3 className="text-md font-bold mb-1">{product.name}</h3>
                     <p className="text-sm text-gray-600">WS Code: {product.wsCode}</p>
                     <p className="text-sm text-gray-600">Sales Price: ${product.salesPrice}</p>
-                    <button className="mt-3 bg-blue-600 text-white px-3 py-1 rounded-lg shadow hover:bg-blue-700 w-full">
+                    <button
+                      className="mt-3 bg-blue-600 text-white px-3 py-1 rounded-lg shadow hover:bg-blue-700 w-full"
+                      onClick={() => handleAddToCart(product)}
+                    >
                       Add to Cart
                     </button>
                   </div>
                 ))}
               </div>
+
               {/* Pagination Controls */}
               <div className="flex justify-center items-center space-x-4 mt-6">
                 <button
@@ -183,6 +225,44 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-600">No products match your search.</p>
           )}
         </main>
+
+        {/* Quantity Modal */}
+        {isModalOpen && selectedProduct && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+              <h3 className="text-xl font-bold mb-4">Select Quantity</h3>
+              <div className="flex items-center justify-center space-x-4">
+                <button
+                  onClick={() => handleQuantityChange("decrease")}
+                  className="px-4 py-2 bg-gray-200 rounded-lg"
+                >
+                  -
+                </button>
+                <span className="text-lg">{quantity}</span>
+                <button
+                  onClick={() => handleQuantityChange("increase")}
+                  className="px-4 py-2 bg-gray-200 rounded-lg"
+                >
+                  +
+                </button>
+              </div>
+              <div className="mt-4 flex justify-between">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 bg-gray-200 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

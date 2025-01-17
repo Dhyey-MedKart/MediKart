@@ -23,10 +23,13 @@ router.get("/my-orders", AuthMiddleware.authUser, OrderController.getOrdersByUse
 // Route to get a single order
 router.get("/order/:id", AuthMiddleware.authUser, OrderController.getOrderController);
 
+
+router.get("/all-order", AuthMiddleware.authAdmin, OrderController.getAllOrderController);
 // Route to update an order status (for admin)
 router.put(
   "/update-order-status/:id",
   AuthMiddleware.authUser,
+  
   OrderController.updateOrderStatusController
 );
 

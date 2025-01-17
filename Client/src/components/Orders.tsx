@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 interface Order {
   id: string;
   date: string;
@@ -14,18 +15,13 @@ const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
 
-  // Function to get the token from cookies
-  const getAuthTokenFromCookie = () => {
-    const cookies = document.cookie.split("; ");
-    const tokenCookie = cookies.find((cookie) => cookie.startsWith("authToken="));
-    return tokenCookie ? tokenCookie.split("=")[1] : null;
-  };
 
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
-      const authToken = getAuthTokenFromCookie();
+      const authToken = Cookies.get("authToken");
 
       if (!authToken) {
         setError("Authentication token is missing. Please log in.");
@@ -62,10 +58,22 @@ const Orders = () => {
     fetchOrders();
   }, []);
 
+  const handleGoHome = () => {
+    router.push("/dashboard");  // Navigate to the admin dashboard
+  };
+
+
   return (
     <div className="min-h-screen text-black bg-gray-100">
-      <header className="bg-blue-600 text-white py-4 px-6">
+
+        <header className="bg-blue-600 text-white py-4 px-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">Your Orders</h1>
+        <button
+          onClick={handleGoHome}  // Trigger navigation when clicked
+          className="bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        >
+          Home
+        </button>
       </header>
       <main className="px-6 py-8">
         {loading ? (

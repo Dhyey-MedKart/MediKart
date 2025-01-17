@@ -4,8 +4,10 @@ import Image from "next/image";
 //import Link from "next/link";
 import axios from "axios";
 import Cookies from "js-cookie";
+import {useRouter} from "next/navigation";
 
 const Cart = () => {
+
   interface CartItem {
     id: number;
     product: {
@@ -18,7 +20,7 @@ const Cart = () => {
     };
     quantity: number;
   }
-
+  const route = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,16 @@ const Cart = () => {
     fetchCartItems();
   }, []);
 
-  const handleRemove = (id: number) => {
+  const handleRemove = async (id: number) => {
+    const token = Cookies.get("authToken");
+    await axios.delete(
+      `http://localhost:8000/cart/remove-from-cart/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+      }
+    )
     setCartItems(cartItems.filter((item) => item.id !== id));
   };
 
@@ -86,20 +97,83 @@ const Cart = () => {
     }
   };
 
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = async () => {
     // Redirect to the order page
-    window.location.href = "/order";
+    try {
+      const token = Cookies.get("authToken");
+      
+      // Token validation check
+      if (!token) {
+        setError("Authorization token is missing. Please log in.");
+        return;
+      }
+  
+      // Send request to backend
+      const response = await axios.post(
+        "http://localhost:8000/orders/place-order",
+        { /* Include necessary request body data here if needed */ },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          timeout: 5000,  // Set timeout to 5 seconds
+        }
+      );
+      
+      // Handle successful response
+      if (response.status === 200) {
+        const response = await axios.delete(
+          "http://localhost:8000/cart/clear-cart",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }  // Set timeout to 5 seconds
+          }
+        );
+        if (response.status === 200){
+          route.push("/order");
+          console.log("Order placed successfully:", response.data);}
+        
+        // Optionally, redirect or display a success message
+      } else {
+        setError("Failed to place the order. Please try again.");
+      }
+      
+    } catch (err) {
+      console.error("Error while placing order:", err);
+  
+      // Specific error handling
+      if (err.code === "ERR_NETWORK") {
+        setError("Network error occurred. Please check your connection.");
+      } else if (err.response) {
+        setError(`Error: ${err.response.data.message || "An error occurred."}`);
+      } else {
+        setError("Update order failed. Please try again.");
+      }
+    }
   };
+  
 
   const totalAmount = cartItems.reduce(
     (total, item) => total + item.product.salesPrice * item.quantity,
     0
   );
-
+  const handleGoHome = () => {
+    route.push("/dashboard");  // Navigate to the admin dashboard
+  };
   return (
     <div className="min-h-screen text-black bg-gray-100">
-      <header className="bg-blue-600 text-white py-4 px-6">
+
+        <header className="bg-blue-600 text-white py-4 px-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">Your Cart</h1>
+          <button
+          onClick={handleGoHome}  // Trigger navigation when clicked
+          className="bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        >
+          Home
+        </button>
+        
       </header>
       <main className="px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
         {loading ? (

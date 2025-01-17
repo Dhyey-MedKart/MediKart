@@ -48,4 +48,10 @@ router.get(
   UserController.getUserProfileController
 );
 
+router.put(
+  "/update-profile",
+  AuthMiddleware.authAdmin,
+  UserController.updateUserProfileController
+)
+
 export default router;

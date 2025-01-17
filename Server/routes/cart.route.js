@@ -16,6 +16,8 @@ router.post(
   CartController.addToCartController
 );
 
+router.delete("/clear-cart", AuthMiddleware.authUser, CartController.clearCartController);
+
 // Route to remove an item from the cart
 router.delete("/remove-from-cart/:id", AuthMiddleware.authUser, CartController.removeFromCartController);
 

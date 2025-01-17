@@ -30,6 +30,8 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+
+
     const fetchProducts = async () => {
       try {
         const token = Cookies.get("authToken");
@@ -81,11 +83,31 @@ const AdminDashboard = () => {
           <h1 className="text-2xl font-bold">Admin Dashboard</h1>
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => router.push("/adminorder")}
+              onClick={() => router.push("/admin/order")}
               className="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-200"
             >
               Orders
             </button>
+
+            <button
+                className="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-200"
+                onClick={() => {
+                  router.push("/admin/users");
+                }}
+              >
+                Users
+              </button>
+
+            <button
+                className="bg-slate-300 text-red-600 px-4 py-2 rounded-lg shadow hover:bg-gray-200"
+                onClick={() => {
+                  Cookies.remove("authToken");
+                  router.push("/login");
+                }}
+              >
+                Logout
+              </button>
+              
             <div className="relative">
               <button
                 onClick={() => setProfileDropdown(!profileDropdown)}
@@ -125,8 +147,9 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <main className="px-6 py-8">
-        {/* Search Bar */}
-        <div className="mb-6">
+        {/* Add Product Button */}
+                {/* Search Bar */}
+                <div className="mb-6">
           <input
             type="text"
             placeholder="Search by product name or WS code..."
@@ -134,6 +157,14 @@ const AdminDashboard = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={() => router.push("../add-product")}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700"
+          >
+            Add Product
+          </button>
         </div>
 
         {/* Product List - Table View */}

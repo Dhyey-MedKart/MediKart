@@ -87,6 +87,7 @@ export const getAllUsers = async () => {
                 },
             },
         });
+        console.log(users);
         return users;
     } catch (error) {
         throw new Error("Error fetching users: " + error.message);
@@ -107,6 +108,33 @@ export const getUserProfile = async (userId) => {
   } catch (error) {
       throw new Error("Error fetching user profile: " + error.message);
   }
+};
+
+export const putUserRole = async (userId, role) => {
+    console.log(userId, role);
+
+    // Find the user by ID
+    const user = await prisma.user.findUnique({
+        where: { id: parseInt(userId) },
+    });
+
+    // If the user doesn't exist, throw an error
+    if (!user) {
+        throw new Error("User not found");
+    }
+
+    console.log(user);  
+
+    // Update the user's role
+    const updatedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            role: role, // Set the new role
+        },
+    });
+
+    console.log(updatedUser);
+    return updatedUser;
 };
 
 

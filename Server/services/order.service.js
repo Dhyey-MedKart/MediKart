@@ -1,13 +1,13 @@
 import prisma from "../db/db.js";
 import { OrderStatus } from "@prisma/client"; // Assuming you have defined OrderStatus enum
-
+import * as CartService from "../services/cart.service.js";
 // Service to place an order
 export const placeOrder = async (userId, items) => {
   // Validate items and calculate total price
   const orderItems = [];
   let totalPrice = 0;
-
-  for (let item of items) {
+  //console.log(items);
+  for (let item of items.items) {
     const product = await prisma.product.findUnique({
       where: { id: item.productId },
     });
@@ -15,7 +15,7 @@ export const placeOrder = async (userId, items) => {
     if (!product) {
       throw new Error(`Product with ID ${item.productId} not found`);
     }
-
+    
     orderItems.push({
       productId: item.productId,
       quantity: item.quantity,
@@ -45,7 +45,9 @@ export const placeOrder = async (userId, items) => {
 
 // Service to get orders by user ID
 export const getOrdersByUser = async (userId) => {
-  const orders = await prisma.order.findMany({
+  try
+  {
+    const orders = await prisma.order.findMany({
     where: { userId },
     include: {
       items: true, // Include order items in the response
@@ -53,6 +55,10 @@ export const getOrdersByUser = async (userId) => {
   });
 
   return orders;
+}
+  catch (error) {
+    throw new Error(" service Error fetching orders: " + error.message);
+  }
 };
 
 // Service to get a single order by ID
@@ -70,6 +76,36 @@ export const getOrderById = async (userId, orderId) => {
 
   return order;
 };
+
+export const getAllOrder = async () => {
+  try {
+    // Fetch all users from the database
+    const users = await prisma.order.findMany({
+    });
+    const fetchedUserIds = new Set();  // Set to store userIds that have already been processed
+    const allOrders = await Promise.all(
+      users.map((userObj) => {
+        if (fetchedUserIds.has(userObj.userId)) {
+          return null;  // Skip fetching orders for this user if already processed
+        }
+        fetchedUserIds.add(userObj.userId);  // Mark this userId as processed
+        return getOrdersByUser(userObj.userId);  // Fetch orders for the user
+      }).filter((order) => order !== null)  // Remove any null values (skipped requests)
+    );
+    const combinedOrders = allOrders.flat();
+    return combinedOrders;
+    
+    //console.log(users);
+  }
+  catch (error) {
+    console.error("Service error: " + error.message);
+    throw new Error("Service error fetching USERS: " + error.message);
+  }
+
+   
+};
+
+
 
 // Service to update order status (for admin)
 export const updateOrderStatus = async (orderId, status, userId) => {

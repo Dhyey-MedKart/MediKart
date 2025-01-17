@@ -63,6 +63,7 @@ export const updateProductController = async (req, res) => {
 export const createProductController = async (req, res) => {
   const { name, wsCode, salesPrice, mrp, packageSize, images, tags, category} = req.body; // Assuming `req.user` contains the authenticated user data
   let userId = req.user.email;
+  
   userId = await prisma.User.findFirst({
     where: { email : userId},
   });
