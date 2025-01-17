@@ -104,9 +104,9 @@ export const getCartItems = async (userId) => {
       where: { userId },
       include: { items: true },
     });
-    console.log(cart);
+    //console.log(cart);
     const cartItems = await prisma.cartItem.findMany({
-      where: { cartId: cart.userId },
+      where: { cartId: cart.id },
       include: { product: true }, // You can include the product details if needed
     });
     return cartItems;

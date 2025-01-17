@@ -84,7 +84,7 @@ const AdminOrderPage = () => {
         ) : error ? (
           <p className="text-red-600">{error}</p>
         ) : orders.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {orders.map((order) => (
               <div
                 key={order.id}

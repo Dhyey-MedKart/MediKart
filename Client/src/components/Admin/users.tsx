@@ -62,11 +62,15 @@ const AllUsers = () => {
 
   return (
     <div className="min-h-screen text-black bg-gray-100">
-      {/* Header */}
-      <header className="bg-blue-600 text-white py-4 px-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">All Users</h1>
-        </div>
+
+        <header className="bg-blue-600 text-white py-4 px-6 flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Your Users</h1>
+        <button
+                className="w-auto text-right px-4 py-2 rounded-lg hover:bg-blue-700"
+                onClick={() => router.push("/admin/dashboard")}
+              >
+                Dashboard
+              </button>
       </header>
 
       {/* Main Content */}
