@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useToast } from "@chakra-ui/react";
 import UploadMultiImage from "../services/auth";
 const AddProduct = () => {
   const [product, setProduct] = useState({
@@ -16,6 +17,7 @@ const AddProduct = () => {
   });
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const toast = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
@@ -42,59 +44,102 @@ const AddProduct = () => {
 };
 
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccessMessage("");
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
+  setSuccessMessage("");
+  const toastId = toast({
+    title: "Loading...",
+    description: "Please wait.",
+    status: "loading",
+    duration: null, // Keep the toast visible until it's updated
+    isClosable: true,
+  });
+  try {
+    // Get the auth token from cookies
+    const token = Cookies.get("authToken");
+    if (!token) {
+      setError("Authorization token is missing. Please log in.");
 
-    try {
-      // Get the auth token from cookies
-      const token = Cookies.get("authToken");
-      if (!token) {
-        setError("Authorization token is missing. Please log in.");
-        return;
-      }
+      // Show an error toast for missing token
+      
 
-      // Convert tags from a comma-separated string to an array
-      const formattedTags = product.tags.split(",").map((tag) => tag.trim());
+      return;
+    }
 
-      // Construct the payload
-      const payload = {
-        name: product.name,
-        wsCode: product.wsCode,
-        salesPrice: parseFloat(product.salesPrice),
-        mrp: parseFloat(product.mrp),
-        packageSize: parseInt(product.packageSize, 10),
-        images: product.images,
-        tags: formattedTags,
-        category: product.category,
-      };
+    // Convert tags from a comma-separated string to an array
+    const formattedTags = product.tags.split(",").map((tag) => tag.trim());
 
-      // Make the POST request
-      const response = await axios.post("http://localhost:8000/products/create-product", payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    // Construct the payload
+    const payload = {
+      name: product.name,
+      wsCode: product.wsCode,
+      salesPrice: parseFloat(product.salesPrice),
+      mrp: parseFloat(product.mrp),
+      packageSize: parseInt(product.packageSize, 10),
+      images: product.images,
+      tags: formattedTags,
+      category: product.category,
+    };
+
+    // Show a loading toast before making the request
+    if (!toast.isActive(toastId)) {
+      toast({
+        id: toastId,
+        title: "Adding Product...",
+        description: `Adding "${product.name}". Please wait.`,
+        status: "loading",
+        duration: null, // Keep toast visible until updated
+        isClosable: true,
+      });
+    }
+
+    // Make the POST request
+    const response = await axios.post("http://localhost:8000/products/create-product", payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 201) {
+      // Show a success toast
+      toast.update(toastId, {
+        title: "Product Added Successfully",
+        description: `Product "${product.name}" has been created.`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
       });
 
-      if (response.status === 201) {
-        setSuccessMessage(`Product "${product.name}" added successfully!`);
-        setProduct({
-          name: "",
-          wsCode: "",
-          salesPrice: "",
-          mrp: "",
-          packageSize: "",
-          images: [],
-          tags: "",
-          category: "",
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Failed to add the product. Please try again.");
+      // Reset the product form
+      setProduct({
+        name: "",
+        wsCode: "",
+        salesPrice: "",
+        mrp: "",
+        packageSize: "",
+        images: [],
+        tags: "",
+        category: "",
+      });
+
+      setSuccessMessage(`Product "${product.name}" added successfully!`);
     }
-  };
+  } catch (err) {
+    console.error(err);
+    setError("Failed to add the product. Please try again.");
+
+    // Update the toast to show an error
+    toast.update(toastId, {
+      title: "Error Adding Product",
+      description: "Enter the details properly.",
+      status: "error",
+      duration: 5000,
+      isClosable: true,
+    });
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-100 text-black flex items-center justify-center">

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "../config/axios"; // Import the Axios instance
 import { useRouter } from "next/navigation";
+import { useToast } from '@chakra-ui/react'
 
 interface RegisterFormInputs {
   email: string;
@@ -16,7 +17,7 @@ const RegisterForm: React.FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormInputs>();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-
+  const toast = useToast()
   const onSubmit = async (data: RegisterFormInputs) => {
     setError(null); // Reset error state
     try {
@@ -24,6 +25,13 @@ const RegisterForm: React.FC = () => {
       console.log("Registered successfully:", response.data);
 
       // Navigate to the dashboard on success
+      toast({
+          title: 'Account created.',
+          description: "We've created your account for you.",
+          status: 'success',
+          duration: 9000,
+          isClosable: true,
+        })
       router.push("/login");
     } catch (err) {
       console.log(err);

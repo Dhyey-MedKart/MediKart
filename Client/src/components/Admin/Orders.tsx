@@ -3,33 +3,66 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { useToast } from '@chakra-ui/react'
+
 
 const AdminOrderPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
+  const toast = useToast(); // Initialize toast
 
   useEffect(() => {
     const fetchOrders = async () => {
+      const toastId = toast({
+        title: "Fetching Orders...",
+        description: "Please wait while we retrieve the orders.",
+        status: "loading",
+        duration: null, // Keep the toast visible until it's updated
+        isClosable: true,
+      });
       try {
         const token = Cookies.get("authToken");
+
+        // Show a loading toast while fetching orders
+        
+
         const response = await axios.get("http://localhost:8000/orders/all-order", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+
         setOrders(response.data); // Directly set the response data
+
+        // Update the toast to indicate success
+        toast.update(toastId, {
+          title: "Orders Fetched Successfully",
+          description: "The orders have been loaded.",
+          status: "success",
+          duration: 800,
+          isClosable: true,
+        });
       } catch (error) {
         console.error(error);
         setError("Failed to fetch orders. Please try again later.");
+
+        // Show an error toast
+        toast.update(toastId,{
+          title: "Error Fetching Orders",
+          description: error.response?.data?.message || "An error occurred while retrieving orders.",
+          status: "error",
+          duration: 1500,
+          isClosable: true,
+        });
       } finally {
-        setLoading(false);
+        setLoading(false); // Stop the loading state regardless of the outcome
       }
     };
 
     fetchOrders();
-  }, []);
+  }, [toast]);
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     const confirmUpdate = window.confirm(

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import axios from "../config/axios"; // Import the Axios instance
 import { useRouter } from "next/navigation";
 import Cookies from 'js-cookie';
+import { useToast } from '@chakra-ui/react'
 
 interface LoginFormInputs {
   email: string;
@@ -15,23 +16,50 @@ const LoginForm: React.FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const toast = useToast()
   const onSubmit = async (data: LoginFormInputs) => {
     setError(null); // Reset error state
+    const toastId = toast({
+      title: 'Authorizing...',
+      description: 'Please wait while we log you in.',
+      status: 'loading',
+      duration: null, // Ensure the toast stays until updated
+      isClosable: true,
+    });
     try {
-      const response = await axios.post("/users/login", data);
-      alert(`Login successful: ${response.data.user.name}`);
-      Cookies.set('authToken', response.data.token, { expires: 7, secure: true })
-      Cookies.set('userEmail', response.data.user.name, { expires: 7, secure: true })
-      if((response.data.user.role) === 'ADMIN'){
-        router.push("/admin/dashboard");
+      // Show loading toast while the API call is in progress
+      
+  
+      const response = await axios.post('/users/login', data);
+  
+      // If successful, update the toast and proceed
+      toast.update(toastId, {
+        title: 'Login Successful',
+        description: `Welcome back, ${response.data.user.name}!`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+  
+      // Store cookies for authentication
+      Cookies.set('authToken', response.data.token, { expires: 7, secure: true });
+      Cookies.set('userEmail', response.data.user.name, { expires: 7, secure: true });
+  
+      // Redirect based on the user's role
+      if (response.data.user.role === 'ADMIN') {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/dashboard');
       }
-      else{
-        router.push("/dashboard");
-      }
-      // Navigate to the dashboard on success
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
-      alert(`Error`);
+      // Display error toast
+      toast.update(toastId,{
+        title: 'Login Failed',
+        description: err.response?.data?.message || 'An error occurred while logging in.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 

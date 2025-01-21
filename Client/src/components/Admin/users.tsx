@@ -3,17 +3,30 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { useToast } from "@chakra-ui/react";
 
 const AllUsers = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const toast = useToast(); // Initialize toast
 
   useEffect(() => {
     const fetchUsers = async () => {
+      const toastId = toast({
+        title: "Fetching Users...",
+        description: "Please wait while we load the user data.",
+        status: "loading",
+        duration: null, // Keep toast until updated
+        isClosable: true,
+      });
       try {
         const token = Cookies.get("authToken");
+
+        // Show a loading toast
+
+
         const response = await axios.get("http://localhost:8000/users/all-users", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -21,22 +34,50 @@ const AllUsers = () => {
         });
 
         setUsers(response.data);
+
+        // Update the toast to success
+        toast.update(toastId, {
+          title: "Users Fetched Successfully",
+          description: "All users have been loaded.",
+          status: "success",
+          duration: 600,
+          isClosable: true,
+        });
       } catch (error) {
-        console.log(error);
+        console.error(error);
         setError("Failed to fetch users. Please try again later.");
+
+        // Show an error toast
+        toast.update(toastId,{
+          title: "Error Fetching Users",
+          description: error.response?.data?.message || "Unable to load user data.",
+          status: "error",
+          duration: 1500,
+          isClosable: true,
+        });
       } finally {
-        setLoading(false);
+        setLoading(false); // Stop the loading state regardless of the outcome
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [toast]);
 
   const handleRoleChange = async (userId: number, currentRole: string) => {
     const newRole = currentRole === "USER" ? "ADMIN" : "USER"; // Toggle the role
 
     try {
       const token = Cookies.get("authToken");
+
+      // Show a loading toast
+      const toastId = toast({
+        title: "Updating Role...",
+        description: `Changing role to ${newRole}. Please wait.`,
+        status: "loading",
+        duration: null, // Keep toast until updated
+        isClosable: true,
+      });
+
       await axios.put(
         `http://localhost:8000/users/update-profile`,
         { id: userId, role: newRole },
@@ -54,9 +95,27 @@ const AllUsers = () => {
           user.id === userId ? { ...user, role: newRole } : user
         )
       );
+
+      // Update the toast to success
+      toast.update(toastId, {
+        title: "Role Updated Successfully",
+        description: `User role changed to ${newRole}.`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setError("Failed to update role. Please try again later.");
+
+      // Show an error toast
+      toast({
+        title: "Error Updating Role",
+        description: error.response?.data?.message || "Unable to update user role.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 

@@ -52,7 +52,7 @@ model CartItem {
   updatedAt DateTime @updatedAt
   User      User?    @relation(fields: [userId], references: [id])
   userId    Int?
-}
+}         
 
 model Cart {
   id        Int        @id @default(autoincrement())

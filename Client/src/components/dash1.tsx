@@ -20,25 +20,21 @@ interface Product {
 
 const ITEMS_PER_PAGE = 12; // Number of products per page
 
+
 async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+
 const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1); // Pagination state
-  const [categoryFilter, setCategoryFilter] = useState<string>('');
-  const [minPrice, setMinPrice] = useState<number>(0);
-  const [maxPrice, setMaxPrice] = useState<number>(1000);
-  const [discountFilter, setDiscountFilter] = useState<number>(0);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Modal state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Selected product for cart
   const [quantity, setQuantity] = useState<number>(1); // Quantity state
-  const [profileMenuOpen, setProfileMenuOpen] = useState<boolean>(false); // Profile menu dropdown state
   const router = useRouter();
   const toast = useToast(); // Initialize useToast hook
 
@@ -52,7 +48,6 @@ const Dashboard: React.FC = () => {
           },
         });
         setProducts(response.data.products);
-        setFilteredProducts(response.data.products);
       } catch (error) {
         console.error(error);
         setError("Failed to fetch products. Please try again later.");
@@ -64,16 +59,10 @@ const Dashboard: React.FC = () => {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    // Apply filters
-    const filtered = products.filter((product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (categoryFilter ? product.category === categoryFilter : true) &&
-      product.salesPrice >= minPrice && product.salesPrice <= maxPrice &&
-      (discountFilter ? product.mrp - product.salesPrice >= discountFilter : true)
-    );
-    setFilteredProducts(filtered);
-  }, [searchQuery, categoryFilter, minPrice, maxPrice, discountFilter, products]);
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.wsCode.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const paginatedProducts = filteredProducts.slice(
@@ -96,6 +85,25 @@ const Dashboard: React.FC = () => {
     setQuantity((prevQuantity) =>
       operation === "increase" ? prevQuantity + 1 : prevQuantity > 1 ? prevQuantity - 1 : 1
     );
+  };
+
+  const handleLogout = async () => {
+    Cookies.remove("authToken");
+    const examplePromise = new Promise((resolve) => {
+      setTimeout(() => resolve(200), 1000)
+    })
+
+    // Will display the loading toast until the promise is either resolved
+    // or rejected.
+    toast.promise(examplePromise, {
+      success: { title: 'Logged Out', description: 'Visit again' },
+      error: { title: 'Rejected', description: 'Something wrong' },
+      loading: { title: 'Logging Out', description: 'Please wait' },
+    })
+    await sleep(1000);
+    router.push("/login");
+    await sleep(1000);
+    toast.closeAll();
   };
 
   const handleConfirm = async () => {
@@ -133,102 +141,62 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
-    Cookies.remove("authToken");
-    const examplePromise = new Promise((resolve) => {
-      setTimeout(() => resolve(200), 1000)
-    })
-    toast.promise(examplePromise, {
-      success: { title: 'Logged Out', description: 'Visit again' },
-      error: { title: 'Rejected', description: 'Something wrong' },
-      loading: { title: 'Logging Out', description: 'Please wait' },
-    })
-    await sleep(1000);
-    router.push("/login");
-    await sleep(1000);
-    toast.closeAll();
-  };
-
   return (
     <div className="flex min-h-screen text-black bg-gray-100">
-      {/* Sidebar with Filters */}
-      <aside className="w-64 bg-blue-600 text-white flex flex-col p-6">
-
-        <h2 className="text-2xl font-bold mb-6">Filters</h2>
-        <div className="space-y-4">
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="text-black p-2 border rounded-lg w-full"
-          >
-            <option value="">Select Category</option>
-            <option value="Health">Health</option>
-            <option value="Beauty">Beauty</option>
-            <option value="Fitness">Fitness</option>
-          </select>
-          <div className="flex space-x-4 text-black">
-            <input
-              type="number"
-              value={minPrice}
-              onChange={(e) => setMinPrice(Number(e.target.value))}
-              placeholder="Min Price"
-              className="p-2 border rounded-lg w-full"
-            />
-            <input
-              type="number"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(Number(e.target.value))}
-              placeholder="Max Price"
-              className="p-2 border rounded-lg w-full"
-            />
-          </div>
-          <input
-            type="number"
-            value={discountFilter}
-            onChange={(e) => setDiscountFilter(Number(e.target.value))}
-            placeholder="Min Discount"
-            className="p-2 border rounded-lg w-full text-black"
-          />
+      {/* Sidebar */}
+      <aside className="w-64 bg-blue-600 text-white flex flex-col">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold">Medikart</h2>
         </div>
+        <nav className="flex-1">
+          <ul className="space-y-2 px-4">
+            <li>
+              <button
+                className="w-full text-left px-4 py-2 rounded-lg hover:bg-blue-700"
+                onClick={() => router.push("/dashboard")}
+              >
+                Dashboard
+              </button>
+            </li>
+            <li>
+              <button
+                className="w-full text-left px-4 py-2 rounded-lg hover:bg-blue-700"
+                onClick={() => router.push("/order")}
+              >
+                Orders
+              </button>
+            </li>
+            <li>
+              <button
+                className="w-full text-left px-4 py-2 rounded-lg hover:bg-blue-700"
+                onClick={() => router.push("/cart")}
+              >
+                Cart
+              </button>
+            </li>
+            <li>
+              <button
+                className="w-full text-left px-4 py-2 rounded-lg hover:bg-blue-700"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </li>
+          </ul>
+        </nav>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
+        {/* Header */}
         <header className="bg-white shadow px-6 py-4 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Medikart</h2>
           <input
             type="text"
             placeholder="Search for products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-1/3 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-1/2 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-
-        <div className="mb-6">
-          {/* Profile section with Select tag */}
-          <div className="relative">
-            <select
-              className="bg-white text-black px-4 py-2 rounded-full w-full mb-3"
-              onChange={(e) => {
-                const selectedOption = e.target.value;
-                if (selectedOption === "profile") {
-                  router.push("/profile");
-                } else if (selectedOption === "logout") {
-                  handleLogout();
-                }
-                else if (selectedOption === "order") {
-                  router.push("/order");
-                }
-              }}
-            >
-              <option value="">User Profile</option>
-              <option value="profile">Profile</option>
-              <option value="order">Orders</option>
-              <option value="logout" className="text-red-600">Logout</option>
-            </select>
-          </div>
-        </div>
         </header>
 
         {/* Product Grid */}
@@ -291,36 +259,45 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-600">No products match your search.</p>
           )}
         </main>
-      </div>
 
-      {/* Add to Cart Modal */}
-      {isModalOpen && selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-80">
-            <h3 className="text-lg font-bold mb-4">Add to Cart</h3>
-            <div className="mb-4">
-              <p className="text-sm font-semibold">{selectedProduct.name}</p>
-              <div className="flex justify-between mt-2">
-                <button onClick={() => handleQuantityChange("decrease")} className="px-3 py-1 bg-gray-200 rounded-full">-</button>
-                <span className="mx-4">{quantity}</span>
-                <button onClick={() => handleQuantityChange("increase")} className="px-3 py-1 bg-gray-200 rounded-full">+</button>
+        {/* Quantity Modal */}
+        {isModalOpen && selectedProduct && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+              <h3 className="text-xl font-bold mb-4">Select Quantity</h3>
+              <div className="flex items-center justify-center space-x-4">
+                <button
+                  onClick={() => handleQuantityChange("decrease")}
+                  className="px-4 py-2 bg-gray-200 rounded-lg"
+                >
+                  -
+                </button>
+                <span className="text-lg">{quantity}</span>
+                <button
+                  onClick={() => handleQuantityChange("increase")}
+                  className="px-4 py-2 bg-gray-200 rounded-lg"
+                >
+                  +
+                </button>
+              </div>
+              <div className="mt-4 flex justify-between">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 bg-gray-200 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                >
+                  Confirm
+                </button>
               </div>
             </div>
-            <button
-              className="w-full bg-blue-600 text-white py-2 rounded-lg"
-              onClick={handleConfirm}
-            >
-              Confirm
-            </button>
-            <button
-              className="w-full mt-2 bg-gray-300 text-black py-2 rounded-lg"
-              onClick={() => setIsModalOpen(false)}
-            >
-              Cancel
-            </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

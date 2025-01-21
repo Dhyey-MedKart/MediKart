@@ -64,7 +64,11 @@ export const getAllUsersController = async (req, res) => {
 
 export const getUserProfileController = async (req, res) => {
     try {
-        const userId = req.user.id; // Make sure the user is authenticated and this ID exists
+        let userId = req.user.email;
+        userId = await prisma.User.findFirst({
+          where: { email : userId},
+        }); // Assuming the user is authenticated
+        userId = userId.id; // Make sure the user is authenticated and this ID exists
         const user = await UserService.getUserProfile(userId); // Call the service function
 
         if (!user) {
