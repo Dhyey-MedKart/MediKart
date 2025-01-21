@@ -217,6 +217,9 @@ const Dashboard: React.FC = () => {
                 } else if (selectedOption === "logout") {
                   handleLogout();
                 }
+                else if (selectedOption === "cart") {
+                  router.push("/cart");
+                }
                 else if (selectedOption === "order") {
                   router.push("/order");
                 }
@@ -224,6 +227,7 @@ const Dashboard: React.FC = () => {
             >
               <option value="">User Profile</option>
               <option value="profile">Profile</option>
+              <option value="cart">Cart</option>
               <option value="order">Orders</option>
               <option value="logout" className="text-red-600">Logout</option>
             </select>
